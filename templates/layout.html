@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>E-Learning</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+<link rel="icon" href="{{ url_for('static', filename='img/logo2.png') }}" style="border-radius: 50% !important;">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/animate.css/animate.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/aos/aos.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/boxicons/css/boxicons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/remixicon/remixicon.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+ 
+
+  <!-- =======================================================
+  * Template Name: Mentor
+  * Updated: May 30 2023 with Bootstrap v5.3.0
+  * Template URL: https://bootstrapmade.com/mentor-free-education-bootstrap-theme/
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="fixed-top">
+    <div class="container d-flex align-items-center">
+      <h1 class="logo me-auto">
+        <img src="{{ url_for('static', filename='img/logo2.png') }}" alt="" style="height: 300px; margin-right: 10px;">
+        <a href="{{ url_for('home') }}">E-Learning</a>
+      </h1>
+      <nav id="navbar" class="navbar order-last order-lg-0">
+        <ul>
+          <li><a class="active" href="{{ url_for('home') }}">Inicio</a></li>
+          <li><a href="{{ url_for('about') }}">Sobre Nosotros</a></li>
+          <li><a href="{{ url_for('courses') }}">Cursos</a></li>
+          <!--<li><a href="{{ url_for('trainers') }}">Temas</a></li>
+          <li><a href="{{ url_for('events') }}">Eventos</a></li> 
+          <li><a href="{{ url_for('precing') }}">Precios</a></li>-->
+          <li><a href="{{ url_for('contact') }}">Contacto</a></li>
+          <li>
+            {% if not session.get('username') %}
+              <li><a href="{{ url_for('login') }}">Ingresar</a></li>
+            {% endif %}
+          </li>
+          <li>
+            {% if session.get('username') %}
+              <a href="{{ url_for('logout') }}">Cerrar sesion</a>
+            {% endif %}
+          </li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+
+      <a href="{{ url_for('courses') }}" class="get-started-btn">Saber Más</a>
+    </div>  
+  </header><!-- End Header -->
+
+      <div>
+
+        {% block content %}
+      
+        {% endblock%}
+      
+      </div>
+  
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for message in messages %}
+              <div class="flash-message">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}       
+  <!-- ======= Footer ======= -->
+  <footer id="footer">
+    <div class="footer-top">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-6 col-md-6 footer-contact">
+            <h3 class="logo me-auto">
+              <img src="{{ url_for('static', filename='img/logo2.png') }}" alt="" style="height: 60px; margin-right: 10px;">
+              <a href="{{ url_for('home') }}">E-Learning</a>
+            </h3>
+            <p>Alto Buró, Puerto Norte
+              Junín 191, S2000 Rosario, Santa Fe</p>
+            <br>
+            <strong>Telefono:</strong> +1 5589 55488 55<br>
+            <strong>Email:</strong> Desarrollo@ramcc.net<br>
+            </p>
+          </div>
+    
+          <div class="col-lg-6 col-md-6 custom-footer-links">
+            <h4>Links Frecuentes</h4>
+            <ul class="d-flex justify-content-start">
+              <li><a href="{{ url_for('home') }}">Inicio</a></li>
+              <li><a href="{{ url_for('about') }}">Sobre Nosotros</a></li>
+              <li><a href="{{ url_for('courses') }}">Cursos</a></li>
+              <li><a href="{{ url_for('cookie_policy') }}">Políticas de Cookies</a></li>
+            </ul>            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container d-md-flex py-4">
+      <div class="me-md-auto text-center text-md-start">
+        <div class="copyright">
+          &copy; Copyright <strong><span>CristobalHBDev</span></strong>. All Rights Reserved
+        </div>
+        
+      </div>
+      <div class="social-links text-center text-md-right pt-3 pt-md-0">
+        <a href="#" class="twitter"><i class="bx bxl-twitter"></i></a>
+        <a href="#" class="facebook"><i class="bx bxl-facebook"></i></a>
+        <a href="#" class="instagram"><i class="bx bxl-instagram"></i></a>
+        <a href="#" class="google-plus"><i class="bx bxl-skype"></i></a>
+        <a href="#" class="linkedin"><i class="bx bxl-linkedin"></i></a>
+      </div>
+    </div>
+  </footer><!-- End Footer -->
+  
+  <div id="preloader"></div>
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <a href="https://wa.me/1234567890" target="_blank" class="whatsapp_float" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; padding: 10px; background-color: #25d366; color: white; border-radius: 50%; text-align: center; font-size: 30px; z-index: 100; display: flex; justify-content: center; align-items: center;">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+<!-- Vendor JS Files -->
+<script src="{{ url_for('static', filename='vendor/purecounter/purecounter_vanilla.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/aos/aos.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.2/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.7.0/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

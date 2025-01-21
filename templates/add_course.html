@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<!-- ======= Breadcrumbs ======= -->
+<div class="breadcrumbs">
+    <div class="container">
+        <h2>Agregar Nuevo Curso</h2>
+        <p>Completa los campos para crear un nuevo curso.</p>
+    </div>
+</div><!-- End Breadcrumbs -->
+
+<main id="main" data-aos="fade-in">
+    <section id="add-course" class="admin">
+        <div class="container" data-aos="fade-up">
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="bg-light p-4 border rounded">
+                        <form method="POST" action="{{ url_for('add_course') }}" enctype="multipart/form-data" class="php-email-form">
+                            
+                            <div class="form-group">
+                                <label for="titulo">Título del Curso</label>
+                                <input type="text" class="form-control" id="titulo" name="titulo" required>
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label for="descripcion">Descripción del Curso</label>
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required></textarea>
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label for="imagen">Imagen del Curso</label>
+                                <input type="file" class="form-control-file" id="imagen" name="imagen" accept="image/*">
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label for="programa_pdf">Programa del Curso (PDF)</label>
+                                <input type="file" class="form-control-file" id="programa_pdf" name="programa_pdf" accept=".pdf">
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label for="form_insc">Formulario de Inscripción (URL)</label>
+                                <input type="text" class="form-control" id="form_insc" name="form_insc">
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label for="cantidad_horas">Cantidad de Horas</label>
+                                <input type="number" class="form-control" id="cantidad_horas" name="cantidad_horas" required>
+                            </div>
+                            <br>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" id="es_sincronico" name="es_sincronico" value="1">
+                                <label class="form-check-label" for="es_sincronico">¿Es Sincrónico?</label>
+                            </div>
+                            <br>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">Agregar Curso</button>
+                                <a href="{{ url_for('admin_view') }}" class="btn btn-secondary">Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main><!-- End #main -->
+{% endblock %}

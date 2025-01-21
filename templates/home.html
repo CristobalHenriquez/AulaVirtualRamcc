@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="alert alert-success">
+      {{ messages[0] }}
+    </div>
+  {% endif %}
+{% endwith %}
+
+
+ <!-- ======= Hero Section ======= -->
+ <section id="hero" class="d-flex justify-content-center align-items-center">
+  <div class="container position-relative" data-aos="zoom-in" data-aos-delay="100">
+    <h1>Bienvenido Estudiante a <br>Nuestra Aula Virtual</h1>
+    <h2>Explora una amplia variedad de cursos y amplía tus conocimientos con nosotros.</h2>
+    <a href="{{ url_for('courses') }}" class="btn-get-started">Saber Más</a>
+  
+    <div class="row justify-content-center mt-2 logo-container-home">
+      <div class="col logo-column-home d-flex justify-content-center align-items-center">
+        <!-- Logo 1 -->
+        <img src="{{ url_for('static', filename='img/AlianzasAppCursos.png') }}" alt="Logo ALPA" class="img-fluid logo-image-home">
+      </div>
+    </div>
+    
+  </div>
+</section><!-- End Hero -->
+
+
+{% endblock %}
+

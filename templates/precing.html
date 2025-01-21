@@ -1,0 +1,240 @@
+<script>
+  // Añadir un nuevo recurso al contenedor de recursos de un módulo
+  function addRecurso(container, recursoData, indexRecurso) {
+    var recursoCount = indexRecurso !== undefined ? indexRecurso : container.getElementsByClassName('recurso').length;
+    var tipo = recursoData ? recursoData.tipo : '';
+    var descripcion = recursoData ? recursoData.descripcion : '';
+    var url = recursoData ? recursoData.url : '';
+    var id = recursoData ? recursoData.id : '';
+    var recursoDiv = document.createElement('div');
+    recursoDiv.classList.add('recurso');
+    recursoDiv.dataset.index = recursoCount;
+    recursoDiv.innerHTML = `
+        <div class="card mb-2">
+            <div class="card-header">
+                <h6>Recurso ${recursoCount + 1}</h6>
+                <button type="button" class="close remove-recurso" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="card-body">
+                <input type="hidden" name="recurso_id_${recursoCount}" value="${id}">
+                <div class="form-group">
+                    <label for="recurso_tipo_${recursoCount}">Tipo de Recurso</label>
+                    <input type="text" class="form-control" id="recurso_tipo_${recursoCount}" name="recurso_tipo_${recursoCount}" value="${tipo}" required>
+                </div>
+                <div class="form-group">
+                    <label for="recurso_descripcion_${recursoCount}">Descripción del Recurso</label>
+                    <textarea class="form-control" id="recurso_descripcion_${recursoCount}" name="recurso_descripcion_${recursoCount}" rows="2" required>${descripcion}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="recurso_url_${recursoCount}">URL del Recurso</label>
+                    <input type="text" class="form-control" id="recurso_url_${recursoCount}" name="recurso_url_${recursoCount}" value="${url}" required>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(recursoDiv);
+    recursoDiv.querySelector('.remove-recurso').addEventListener('click', function() {
+        container.removeChild(recursoDiv);
+    });
+  }
+  
+  // Añadir un nuevo módulo al contenedor
+  function addModulo(moduloData, indexModulo) {
+    var container = document.getElementById('modulos-container');
+    var moduloCount = indexModulo !== undefined ? indexModulo : container.getElementsByClassName('modulo').length;
+    var titulo = moduloData ? moduloData.titulo : '';
+    var descripcion = moduloData ? moduloData.descripcion : '';
+    var id = moduloData ? moduloData.id : '';
+    var moduloDiv = document.createElement('div');
+    moduloDiv.classList.add('modulo');
+    moduloDiv.dataset.index = moduloCount;
+    moduloDiv.innerHTML = `
+        <div class="card mb-2">
+            <div class="card-header">
+                <h5>Módulo ${moduloCount + 1}</h5>
+                <button type="button" class="close remove-modulo" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="card-body">
+                <input type="hidden" name="modulo_id_${moduloCount}" value="${id}">
+                <div class="form-group">
+                    <label for="modulo_titulo_${moduloCount}">Título del Módulo</label>
+                    <input type="text" class="form-control" id="modulo_titulo_${moduloCount}" name="modulo_titulo_${moduloCount}" value="${titulo}" required>
+                </div>
+                <div class="form-group">
+                    <label for="modulo_descripcion_${moduloCount}">Descripción del Módulo</label>
+                    <textarea class="form-control" id="modulo_descripcion_${moduloCount}" name="modulo_descripcion_${moduloCount}" rows="2" required>${descripcion}</textarea>
+                </div>
+                <div class="recursos-container">
+                    <!-- Los recursos se añadirán aquí -->
+                </div>
+                <button type="button" class="btn btn-secondary add-recurso">Añadir Recurso</button>
+            </div>
+        </div>
+    `;
+    container.appendChild(moduloDiv);
+  moduloDiv.querySelector('.remove-modulo').addEventListener('click', function() {
+      container.removeChild(moduloDiv);
+  });
+  moduloDiv.querySelector('.add-recurso').addEventListener('click', function() {
+      addRecurso(moduloDiv.querySelector('.recursos-container'));
+  });
+  if (moduloData && moduloData.recursos) {
+    moduloData.recursos.forEach(function(recurso, indexRecurso) {
+      addRecurso(moduloDiv.querySelector('.recursos-container'), recurso, indexRecurso);
+    });
+  }
+}
+
+// Event listener para el botón de añadir módulo
+document.getElementById('add-modulo').addEventListener('click', function() {
+  addModulo();
+});
+
+// Carga inicial de módulos existentes y sus recursos
+window.onload = function() {
+  {% for modulo in modulos %}
+    var recursos = [];
+    {% for recurso in modulo.recursos %}
+      recursos.push({
+        id: '{{ recurso.id }}',
+        tipo: '{{ recurso.tipo }}',
+        descripcion: '{{ recurso.descripcion }}',
+        url: '{{ recurso.url }}'
+      });
+    {% endfor %}
+    addModulo({
+      id: '{{ modulo.id }}',
+      titulo: '{{ modulo.titulo }}',
+      descripcion: '{{ modulo.descripcion }}',
+      recursos: recursos
+    }, {{ loop.index0 }});
+  {% endfor %}
+};
+
+container.appendChild(recursoDiv);
+  
+// Agrega un manejador de eventos para el botón de eliminar recurso
+recursoDiv.querySelector('.remove-recurso').addEventListener('click', function() {
+    container.removeChild(recursoDiv);
+});
+
+
+// Event listener para el botón de añadir módulo
+document.getElementById('add-modulo').addEventListener('click', function() {
+addModulo();
+});
+
+{% endblock %}
+<script>
+  // Añadir un nuevo módulo al contenedor
+  function addModulo(moduloData) {
+      var container = document.getElementById('modulos-container');
+      var moduloCount = container.getElementsByClassName('modulo').length;
+      var moduloDiv = document.createElement('div');
+      moduloDiv.classList.add('modulo');
+      moduloDiv.dataset.index = moduloCount;
+  
+      // Si moduloData está definido, usamos esos valores, de lo contrario usamos valores vacíos
+      var titulo = moduloData ? moduloData.titulo : '';
+      var descripcion = moduloData ? moduloData.descripcion : '';
+  
+      moduloDiv.innerHTML = `
+          <div class="card mb-2">
+              <div class="card-header">
+                  <h5>Módulo ${moduloCount + 1}</h5>
+                  <button type="button" class="close remove-modulo" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              
+              <div class="card-body">
+                  <div class="form-group">
+                      <label for="modulo_titulo_${moduloCount}">Título del Módulo</label>
+                      <input type="text" class="form-control" id="modulo_titulo_${moduloCount}" name="modulo_titulo[]" value="${titulo}" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="modulo_descripcion_${moduloCount}">Descripción del Módulo</label>
+                      <textarea class="form-control" id="modulo_descripcion_${moduloCount}" name="modulo_descripcion[]" rows="2" required>${descripcion}</textarea>
+                  </div>
+                  <!-- Contenedor de recursos -->
+                  <div class="recursos-container">
+                      <!-- Aquí se añadirán los recursos del módulo -->
+                  </div>
+                  <button type="button" class="btn btn-secondary add-recurso">Añadir Recurso</button>
+              </div>
+          </div>
+      `;
+  
+      container.appendChild(moduloDiv);
+  
+      // Agrega un manejador de eventos para el botón de eliminar módulo
+      moduloDiv.querySelector('.remove-modulo').addEventListener('click', function() {
+          container.removeChild(moduloDiv);
+      });
+  
+      // Agrega un manejador de eventos para el botón de añadir recurso
+      moduloDiv.querySelector('.add-recurso').addEventListener('click', function() {
+          addRecurso(moduloDiv.querySelector('.recursos-container'));
+      });
+  }
+  
+    // Añadir un nuevo recurso al contenedor de recursos de un módulo
+    function addRecurso(container, recursoData) {
+      var recursoCount = container.getElementsByClassName('recurso').length;
+      var recursoDiv = document.createElement('div');
+      recursoDiv.classList.add('recurso');
+      recursoDiv.dataset.index = recursoCount;
+  
+      // Si recursoData está definido, usamos esos valores, de lo contrario usamos valores vacíos
+      var tipo = recursoData ? recursoData.tipo : '';
+      var descripcion = recursoData ? recursoData.descripcion : '';
+      var url = recursoData ? recursoData.url : '';
+  
+      recursoDiv.innerHTML = `
+          <div class="card mb-2">
+              <div class="card-header">
+                  <h6>Recurso ${recursoCount + 1}</h6>
+                  <button type="button" class="close remove-recurso" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              <div class="card-body">
+                  <div class="form-group">
+                      <label for="recurso_tipo_${recursoCount}">Tipo de Recurso</label>
+                      <input type="text" class="form-control" id="recurso_tipo_${recursoCount}" name="recurso_tipo[]" value="${tipo}" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="recurso_descripcion_${recursoCount}">Descripción del Recurso</label>
+                      <textarea class="form-control" id="recurso_descripcion_${recursoCount}" name="recurso_descripcion[]" rows="2" required>${descripcion}</textarea>
+                  </div>
+                  <div class="form-group">
+                      <label for="recurso_url_${recursoCount}">URL del Recurso</label>
+                      <input type="text" class="form-control" id="recurso_url_${recursoCount}" name="recurso_url[]" value="${url}" required>
+                  </div>
+              </div>
+          </div>
+      `;
+  
+      container.appendChild(recursoDiv);
+  
+      // Agrega un manejador de eventos para el botón de eliminar recurso
+      recursoDiv.querySelector('.remove-recurso').addEventListener('click', function() {
+          container.removeChild(recursoDiv);
+      });
+  }
+  
+  // Event listener para el botón de añadir módulo
+  document.getElementById('add-modulo').addEventListener('click', function() {
+    addModulo();
+  });
+  
+  // Inicializar con un módulo si no hay datos de módulo existentes
+  // Aquí deberías cargar los módulos existentes del curso y sus recursos si los hay
+  // Esto dependerá de cómo estés cargando los datos en tu backend, por ejemplo, con Flask
+  // Podrías pasar los módulos y recursos como variables de plantilla y luego iterar sobre ellos aquí
+</script>
+{% endblock %}

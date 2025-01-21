@@ -1,0 +1,254 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<main id="main" data-aos="fade-in">
+
+  <!-- ======= Breadcrumbs ======= -->
+  <div class="breadcrumbs">
+    <div class="container">
+      <h2>Panel de Administrador</h2>
+      <p>Gestiona los cursos y usuarios desde aquí.</p>
+    </div>
+  </div><!-- End Breadcrumbs -->
+
+  <!-- ======= Admin Section ======= -->
+  <section id="admin" class="admin">
+    <div class="container" data-aos="fade-up">
+
+      <!-- CRUD para Cursos -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Gestión de Cursos</h3>
+            <a href="{{ url_for('add_course') }}" class="btn btn-success">Agregar Nuevo Curso</a>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="thead-light">
+                <tr>
+                  <th>Imagen</th>
+                  <th>Título</th>
+                  <th>Descripción</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for curso in cursos %}
+                <tr>
+                  <td>
+                    {% if curso.imagen_path %}
+                      <img src="{{ url_for('course_image', curso_id=curso.id).replace('\\', '/') }}" alt="{{ curso.titulo }}" style="width: 200px; height: auto; border-radius: 20px;" />
+                    {% else %}
+                      <span>No disponible</span>
+                    {% endif %}
+                  </td>
+                  <td><h5>{{ curso.titulo }}</h5></td>
+                  <td>{{ curso.descripcion }}</td>
+                  <td style="white-space: nowrap;">
+                    <a href="{{ url_for('edit_course', curso_id=curso.id) }}" class="btn btn-primary mr-2">Editar</a>
+                    <!-- Botón de eliminar con modal para confirmación -->
+                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteCourseModal{{ curso.id }}">
+                      Eliminar
+                    </button>                    
+                    <!-- Modal de confirmación de eliminación para cursos -->
+                    <div class="modal fade" id="deleteCourseModal{{ curso.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteCourseModalLabel{{ curso.id }}" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="deleteCourseModalLabel{{ curso.id }}">Confirmar eliminación</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+                            ¿Estás seguro de que deseas eliminar el curso "{{ curso.titulo }}"?
+                            <br> Esta acción no se puede deshacer.
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <form method="POST" action="{{ url_for('delete_course', id=curso.id) }}">
+                              <input type="hidden" name="curso_id" value="{{ curso.id }}">
+                              <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
+                            </form>                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </td>                  
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CRUD para Usuarios Alumnos -->
+      <div class="row mb-3">
+        <div class="col-lg-12">
+            <form action="{{ url_for('admin_view') }}" method="get" class="form-inline">
+                <div class="form-group">
+                    <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder=  "Ingrese nombre de usuario para buscar">
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary ml-2">Buscar</button>
+            </form>
+        </div>
+      </div>
+    
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Gestión de Usuarios Alumnos</h3>
+            <a href="{{ url_for('add_user') }}" class="btn btn-success">Agregar Nuevo Usuario</a>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="thead-light">
+                <tr>
+                  <th>Nombre y Apellido</th>
+                  <th>Municipio</th>
+                  <th>Email</th>
+                  <th>Cursos Inscritos</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Aquí irían los usuarios obtenidos de la base de datos -->
+                {% for usuario in usuarios %}
+                <tr>
+                  <td><h5>{{ usuario.nombre }} {{ usuario.apellidos }}</h5></td>
+                  <td>{{ usuario.municipio }}</td>
+                  <td>{{ usuario.email }}</td>
+                  <td>
+                    <!-- Mostrar todos los cursos a los que el usuario está inscrito -->
+                    {% if usuario.inscripciones %}
+                        {% for inscripcion in usuario.inscripciones %}
+                            <div>{{ inscripcion.titulo }} ({{ inscripcion.fecha_inscripcion }})</div>
+                        {% endfor %}
+                    {% else %}
+                        <span>No inscrito en cursos</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <!-- Botón para abrir el modal de edición -->
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editUserModal{{ usuario.id }}">
+                      Editar
+                    </button>
+                    
+                    <!-- Modal de edición de usuario -->
+                    <div class="modal fade" id="editUserModal{{ usuario.id }}" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel{{ usuario.id }}" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <form method="POST" action="{{ url_for('edit_user', id=usuario.id) }}">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="editUserModalLabel{{ usuario.id }}">Editar Usuario</h5>
+                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                            </div>
+                            <div class="modal-body">
+                              <!-- Aquí van los campos del formulario con los datos actuales del usuario -->
+                              <div class="form-group">
+                                <label for="nombre">Nombre</label>
+                                <input type="text" class="form-control" name="nombre" value="{{ usuario.nombre }}" required>
+                              </div>
+                              <div class="form-group">
+                                <label for="apellidos">Apellidos</label>
+                                <input type="text" class="form-control" name="apellidos" value="{{ usuario.apellidos }}" required>
+                              </div>
+                              <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" name="email" value="{{ usuario.email }}" required>
+                              </div>
+                              <!-- Selector de cursos (opcional) -->
+                              <div class="form-group">
+                                <label for="curso_id">Curso (opcional)</label>
+                                <select class="form-control" name="curso_id">
+                                  <option value="">No inscrito</option>
+                                  {% for curso in cursos %}
+                                      <!-- Asegúrate de que la lógica para 'selected' aquí coincida con cómo estás pasando la info del curso actual -->
+                                      <option value="{{ curso.id }}" {% if usuario.curso_actual_id == curso.id %} selected {% endif %}>
+                                          {{ curso.titulo }}
+                                      </option>
+                                  {% endfor %}
+                                </select>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                              <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+              
+                    <!-- Botón para abrir el modal de eliminación -->
+                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteUserModal{{ usuario.id }}">
+                      Eliminar
+                    </button>
+                    
+                    <!-- Modal de confirmación de eliminación -->
+                    <div class="modal fade" id="deleteUserModal{{ usuario.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel{{ usuario.id }}" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="deleteUserModalLabel{{ usuario.id }}">Confirmar Eliminación</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+                            ¿Estás seguro de que deseas eliminar a {{ usuario.nombre }} {{ usuario.apellidos }}?
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <form method="POST" action="{{ url_for('delete_user', id=usuario.id) }}">
+                              <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                              <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>              
+            </table>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            {% if current_page > 1 %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('admin_view', page=current_page-1, search=search_query) }}">Anterior</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+            {% endif %}
+    
+            {% for page in range(1, total_pages + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}"><a class="page-link" href="{{ url_for('admin_view', page=page, search=search_query) }}">{{ page }}</a></li>
+            {% endfor %}
+    
+            {% if current_page < total_pages %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('admin_view', page=current_page+1, search=search_query) }}">Siguiente</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+            {% endif %}
+        </ul>
+      </nav>
+    
+      <br>
+      <div class="container mb-4">
+        <a href="{{ url_for('logout') }}" class="btn btn-warning">Cerrar Sesión</a>
+      </div>
+    </div>
+  </section><!-- End Admin Section -->
+
+</main><!-- End #main -->
+
+{% endblock %}

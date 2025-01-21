@@ -1,0 +1,5 @@
+mysql_host: 'localhost'
+mysql_user: 'root'
+mysql_password: ''  # Asegúrate de que esta sea la contraseña correcta para el usuario 'root', si existe
+mysql_db: 'app_cursos'
+mysql_port: '3307'  # Añade esta línea para el puerto

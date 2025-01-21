@@ -1,0 +1,48 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <main id="main" data-aos="fade-in">
+    <!-- ======= Breadcrumbs ======= -->
+    <div class="breadcrumbs">
+      <div class="container">
+        <h2>Cursos</h2>
+        <p>Explora nuestra amplia gama de cursos y encuentra el que necesitas para llevar tu carrera al siguiente nivel.</p>
+      </div>
+    </div>
+    <!-- ======= Courses Section ======= -->
+    <section id="courses" class="courses">
+      <div class="container" data-aos="fade-up">
+        <div class="row" data-aos="zoom-in" data-aos-delay="100">
+          {% for curso in cursos %}
+            <div class="col-lg-4 col-md-6 d-flex align-items-stretch mb-4">
+              <div class="course-item">
+                <!-- Contenedor de la imagen con clase adicional para aplicar estilos -->
+                <div class="image-container d-flex justify-content-center align-items-center" style="height: 200px; width: 100%;">
+                  <img src="{{ url_for('course_image', curso_id=curso.id) }}" alt="{{ curso.titulo }}" class="img-fluid rounded" style="max-height: 100%; max-width: 100%; object-fit: cover;">
+                </div>
+                <div class="course-content">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4><a href="{{ url_for('course_program', curso_id=curso.id) }}">{{ curso.titulo }}</a></h4>
+                    {% if curso.es_sincronico %}
+                      <p class="price"></p>
+                    {% else %}
+                      <p class="price"></p>
+                    {% endif %}
+                  </div>
+                  <a href="{{ url_for('course_program', curso_id=curso.id) }}">Ver Programa del Curso</a>
+                  <p>{{ curso.descripcion }}</p>
+                  <p>Cantidad de horas: {{ curso.cantidad_horas }}</p>
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <p>No hay cursos disponibles en este momento.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+    <!-- End Courses Section -->
+
+  </main>
+  <!-- End #main -->
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<main id="main" data-aos="fade-in">
+
+  <!-- ======= Breadcrumbs ======= -->
+  <div class="breadcrumbs">
+    <div class="container">
+      <h2>Perfil del Estudiante</h2>
+      <p>Accede a tu información y cursos inscritos.</p>
+    </div>
+  </div><!-- End Breadcrumbs -->
+  <!-- ======= Student Profile Section ======= -->
+  <section id="student-profile" class="student-profile">
+    <div class="container" data-aos="fade-up">
+       <div class="row" data-aos="zoom-in" data-aos-delay="100">
+         <div class="col-lg-8 col-md-10 d-flex align-items-stretch mx-auto">
+           <div class="profile-item bg-light p-4 border rounded shadow-sm">
+             <h3 class="text-center">{{ user.nombre }} {{ user.apellidos }}</h3>
+             <p><strong>DNI:</strong> {{ user.dni }}</p>
+             <p><strong>Email:</strong> {{ user.email }}</p>
+             <p><strong>Municipio:</strong> {{ user.municipio }}</p>
+             <h4>Cursos Inscritos:</h4>
+             {% for curso_id, curso in cursos_info.items() %}
+             <div class="course-item my-3 d-flex">
+               <div class="flex-shrink-0">
+                 <img src="{{ url_for('course_image', curso_id=curso.id) }}" alt="{{ curso.titulo }}" class="img-fluid rounded" style="width:100px; height:auto;">
+               </div>
+               <div class="flex-grow-1 ms-3">
+                 <h5>{{ curso.titulo }}</h5>
+                 <p>{{ curso.descripcion }}</p>
+               </div>
+             </div>
+             <div class="mt-3">
+               <h6>Módulos:</h6>
+               <ul class="list-group list-group-flush">
+                 {% for modulo in curso.modulos %}
+                 <li class="list-group-item">
+                   {{ modulo.titulo }}: {{ modulo.descripcion }}
+                   {% if modulo.recursos %}
+                   <ul class="list-group mt-2">
+                     <h6>Recursos:</h6>
+                     {% for recurso in modulo.recursos %}
+                     <li class="list-group-item">
+                       Tipo: {{ recurso.tipo }}<br>
+                       Descripción: {{ recurso.descripcion }}<br>
+                       URL: {% if recurso.url %}<a href="{{ recurso.url }}" target="_blank" class="text-primary">Ir a la clase</a>{% else %}No disponible{% endif %}<br>
+                       Archivo: {% if recurso.archivo %}<a href="{{ recurso.archivo }}" target="_blank" class="text-primary">Ver en Drive</a>{% else %}No disponible{% endif %}
+                     </li>
+                     {% endfor %}
+                   </ul>
+                   {% endif %}
+                 </li>
+                 {% endfor %}
+               </ul>
+             </div>
+             {% endfor %}
+           </div>
+         </div>
+       </div>
+    </div>
+    <div class="text-center mt-4">
+      <a href="{{ url_for('logout') }}" class="btn btn-danger btn-lg">Cerrar Sesión</a>
+    </div>
+  </section><!-- End Student Profile Section -->
+
+</main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<main id="main" data-aos="fade-in">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- Breadcrumbs -->
+                <div class="breadcrumbs">
+                    <h2>Editar Curso</h2>
+                    <p>Modifica los detalles del curso seleccionado.</p>
+                </div><!-- End Breadcrumbs -->
+
+                <!-- Edit Course Section -->
+                <section id="edit-course" class="edit-course">
+                    <form method="POST" action="{{ url_for('edit_course', curso_id=curso_id) }}" enctype="multipart/form-data">
+                        {{ curso_form.csrf_token }}
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título del Curso</label>
+                            {{ curso_form.titulo(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            {{ curso_form.descripcion(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="imagen" class="form-label">Imagen del Curso</label>
+                            {{ curso_form.imagen(class="form-control") }}
+                            <!-- Agregar la etiqueta img para mostrar la imagen -->
+                            <img src="{{ url_for('course_image', curso_id=curso_id) }}" alt="Imagen del Curso" class="mt-2 img-fluid rounded" style="max-width: 200px;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="programa_pdf" class="form-label">Programa PDF</label>
+                            {{ curso_form.programa_pdf(class="form-control") }}
+                            <!-- Agregar el enlace para ver el programa PDF -->
+                            <a href="{{ url_for('course_program', curso_id=curso_id) }}" class="d-block mt-2">Ver Programa del Curso</a>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cantidad_horas" class="form-label">Cantidad de Horas</label>
+                            {{ curso_form.cantidad_horas(class="form-control") }}
+                        </div>
+
+                        <h3>Módulos</h3>
+                        <div id="modulos-container">
+                            {% for modulo in modulos %}
+                                <div class="modulo mb-4" data-index="{{ loop.index0 }}">
+                                    <input type="hidden" name="modulos_ids[]" value="{{ modulo.id }}">
+                                    <div class="mb-3">
+                                        <label for="modulos-{{ loop.index0 }}-titulo" class="form-label">Título del Módulo</label>
+                                        <input type="text" class="form-control" name="modulo_titulo_{{ modulo.id }}" value="{{ modulo.titulo }}" placeholder="Título del Módulo">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="modulos-{{ loop.index0 }}-descripcion" class="form-label">Descripción</label>
+                                        <textarea class="form-control" name="modulo_descripcion_{{ modulo.id }}" placeholder="Descripción del Módulo">{{ modulo.descripcion }}</textarea>
+                                    </div>
+                                    <div class="recursos-container" id="recursos-container-{{ loop.index0 }}">
+                                        {% for recurso in modulo.recursos %}
+                                            <div class="recurso mb-3">
+                                                <input type="hidden" name="modulo_{{ modulo.id }}_recursos_ids[]" value="{{ recurso.id }}">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Tipo de Recurso</label>
+                                                    <input type="text" class="form-control" name="recurso_tipo_{{ modulo.id }}_{{ recurso.id }}" value="{{ recurso.tipo }}" placeholder="Tipo">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Descripción</label>
+                                                    <textarea class="form-control" name="recurso_descripcion_{{ modulo.id }}_{{ recurso.id }}" placeholder="Descripción">{{ recurso.descripcion }}</textarea>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <button type="button" class="btn btn-secondary mt-3 agregarRecursoBtn" data-index="{{ loop.index0 }}">Agregar Recurso</button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" id="agregarModuloBtn" class="btn btn-primary mt-3">Agregar Módulo</button>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-success">Guardar Curso</button>
+                            <button type="button" id="cancelarBtn" class="btn btn-secondary ms-2">Cancelar</button>
+                        </div>
+                    </form>
+                </section>
+                <!-- Aquí termina la sección de edición del curso -->
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+
+    document.getElementById('cancelarBtn').addEventListener('click', function() {
+        // Redirige al usuario a la página anterior
+        window.history.back();
+    });
+    
+    $(document).ready(function() {
+        const modulosData = {{ modulos|tojson|safe }};
+  
+        modulosData.forEach((modulo, index) => {
+            agregarModulo(index, modulo.titulo, modulo.descripcion, modulo.recursos, modulo.id);
+        });
+  
+        function agregarModulo(index, titulo, descripcion, recursos, moduloId = null) {
+            let idInputHTML = moduloId ? `<input type="hidden" name="modulos_ids[]" value="${moduloId}">` : '';
+            const moduloHTML = `
+                <div class="modulo mb-4" data-index="${index}">
+                    ${idInputHTML}
+                    <div class="mb-3">
+                        <label for="modulos-${index}-titulo" class="form-label">Título del Módulo</label>
+                        <input type="text" class="form-control" name="modulo_titulo_${moduloId}" value="${titulo || ''}" placeholder="Título del Módulo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modulos-${index}-descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" name="modulo_descripcion_${moduloId}" placeholder="Descripción del Módulo">${descripcion || ''}</textarea>
+                    </div>
+                    <div class="recursos-container" id="recursos-container-${index}">
+                        <!-- Recursos se añadirán aquí -->
+                    </div>
+                    <button type="button" class="btn btn-secondary mt-3 agregarRecursoBtn" data-index="${index}">Agregar Recurso</button>
+                </div>
+            `;
+            $('#modulos-container').append(moduloHTML);
+            recursos.forEach((recurso, recursoIndex) => {
+                agregarRecurso(index, recursoIndex, recurso.tipo, recurso.descripcion, recurso.id);
+            });
+        }
+  
+        function agregarRecurso(moduloIndex, recursoIndex, tipo, descripcion, recursoId = null) {
+            let idInputHTML = recursoId ? `<input type="hidden" name="modulos_${moduloIndex}_recursos_ids[]" value="${recursoId}">` : '';
+            const recursoHTML = `
+                <div class="recurso mb-3" data-index="${recursoIndex}">
+                    ${idInputHTML}
+                    <div class="mb-3">
+                        <label for="modulos-${moduloIndex}-recursos-${recursoIndex}-tipo" class="form-label">Tipo de Recurso</label>
+                        <input type="text" class="form-control" name="recurso_tipo_${moduloIndex}_${recursoIndex}" value="${tipo || ''}" placeholder="Tipo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modulos-${moduloIndex}-recursos-${recursoIndex}-descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" name="recurso_descripcion_${moduloIndex}_${recursoIndex}" placeholder="Descripción">${descripcion || ''}</textarea>
+                    </div>
+                </div>
+            `;
+            $(`#recursos-container-${moduloIndex}`).append(recursoHTML);
+        }
+  
+        $('#agregarModuloBtn').click(function() {
+            const newIndex = $('#modulos-container .modulo').length;
+            agregarModulo(newIndex);
+        });
+
+        // Agregar recursos dinámicamente
+        $(document).on('click', '.agregarRecursoBtn', function() {
+            const moduloIndex = $(this).data('index');
+            const recursosContainer = $(`#recursos-container-${moduloIndex}`);
+            const recursoIndex = recursosContainer.children('.recurso').length;
+
+            agregarRecurso(moduloIndex, recursoIndex);
+        });
+    });
+</script>
+
+{% endblock %}
