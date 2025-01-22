@@ -1,12 +1,12 @@
 import os
 import uuid
 import secrets
-import mysql.connector
 import yaml
 import io
 import bcrypt
 import pprint
 import traceback 
+import pymysql
 from itsdangerous import URLSafeTimedSerializer as Serializer, BadSignature, SignatureExpired
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timedelta, timezone
@@ -76,8 +76,25 @@ def allowed_file(filename):
 
 # Función para obtener una nueva conexión a la base de datos
 def get_db_connection():
-    connection = mysql.connector.connect(**db_config)
-    return connection
+    try:
+        # Leer configuración desde db.yaml
+        with open("db.yaml", "r") as file:
+            db_config = yaml.safe_load(file)
+
+        # Conexión usando pymysql
+        connection = pymysql.connect(
+            host=db_config['mysql_host'],
+            user=db_config['mysql_user'],
+            password=db_config['mysql_password'],
+            database=db_config['mysql_db'],
+            port=int(db_config['mysql_port'])
+        )
+        print("Conexión exitosa a la base de datos")
+        return connection
+
+    except Exception as e:
+        print(f"Error al conectar a la base de datos: {e}")
+        raise
 
 # Función para generar un token y su fecha de expiración
 def generar_token(email):
@@ -134,7 +151,7 @@ Si no solicitaste este cambio, simplemente ignora este correo y no se hará ning
 def obtener_modulos_y_recursos(curso_id):
     modulos = []
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
 
     # Obtener todos los módulos para este curso
     cursor.execute("SELECT * FROM modulos WHERE curso_id = %s", (curso_id,))
@@ -163,7 +180,7 @@ def reset_password_request():
     if request.method == "POST":
         email = request.form.get("email")
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM usuarios WHERE email = %s", (email,))
         user = cursor.fetchone()
         
@@ -251,7 +268,7 @@ def add_modulo_to_course(curso_id):
 @app.route('/modulos/edit/<int:modulo_id>', methods=['GET', 'POST'])
 def edit_modulo(modulo_id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
 
     if request.method == 'POST':
         titulo = request.form['titulo']
@@ -302,7 +319,7 @@ def add_recurso_to_modulo(modulo_id):
 @app.route('/recursos/edit/<int:recurso_id>', methods=['GET', 'POST'])
 def edit_recurso(recurso_id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
 
     if request.method == 'POST':
         tipo = request.form['tipo']
@@ -352,7 +369,7 @@ def delete_recurso(recurso_id):
 @app.route('/get_modulo_data/<int:modulo_id>')
 def get_modulo_data(modulo_id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
     
     try:
         cursor.execute("SELECT * FROM modulos WHERE id = %s", (modulo_id,))
@@ -411,7 +428,7 @@ def add_course():
 
             # Conexión a la base de datos
             conn = get_db_connection()
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
 
             # Insertar el nuevo curso
             cursor.execute("""
@@ -462,7 +479,7 @@ def add_course():
 @app.route('/courses/edit/<int:curso_id>', methods=['GET', 'POST'])
 def edit_course(curso_id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
     curso_form = CursoForm()
     curso = None
     modulos = None
@@ -596,7 +613,7 @@ def delete_course(id):
         return redirect(url_for('login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
     
     try:
         # Recuperar la ruta de la imagen del curso antes de eliminar el curso
@@ -679,7 +696,7 @@ def signup():
     
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
 
         cursor.execute("SELECT id, titulo FROM cursos")  # Asegúrate de que esta es la tabla correcta
         lista_cursos = cursor.fetchall()
@@ -738,7 +755,7 @@ def login():
         contrasena = request.form['contrasena']
 
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM usuarios WHERE email = %s", (email,))
         user = cursor.fetchone()
         cursor.close()
@@ -773,16 +790,21 @@ def admin_view():
 
     cursos = []
     lista_usuarios = []
+    conn = None
+    cursor = None
 
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
 
+        # Obtener cursos
         cursor.execute("SELECT id, titulo, descripcion, imagen_path FROM cursos")
         cursos = cursor.fetchall()
 
+        # Buscar usuarios
         search_pattern = f"%{search_query}%"
-        cursor.execute("SELECT COUNT(*) AS total FROM usuarios WHERE nombre LIKE %s OR apellidos LIKE %s", (search_pattern, search_pattern))
+        cursor.execute("SELECT COUNT(*) AS total FROM usuarios WHERE nombre LIKE %s OR apellidos LIKE %s",
+                       (search_pattern, search_pattern))
         total_users_result = cursor.fetchone()
         total_users = total_users_result['total'] if total_users_result else 0
         total_pages = max(1, -(-total_users // users_per_page))
@@ -797,13 +819,13 @@ def admin_view():
         """, (search_pattern, search_pattern, users_per_page, offset))
         lista_usuarios = cursor.fetchall()
 
+        # Obtener inscripciones si hay usuarios
         if lista_usuarios:
             user_ids = tuple(user['id'] for user in lista_usuarios)
-            # Cuando solo hay un usuario, MySQL espera un solo valor, no una tupla.
             if len(user_ids) == 1:
-                user_ids = user_ids[0],
-            placeholders = ', '.join(['%s'] * len(user_ids))  # Genera los placeholders basados en la cantidad de user_ids
+                user_ids = (user_ids[0],)  # Asegurar que sea una tupla para pymysql
 
+            placeholders = ', '.join(['%s'] * len(user_ids))
             cursor.execute(f"""
                 SELECT i.usuario_id, c.titulo AS curso_titulo, i.fecha_inscripcion
                 FROM inscripciones i
@@ -812,6 +834,7 @@ def admin_view():
             """, user_ids)
             inscripciones = cursor.fetchall()
 
+            # Asignar inscripciones a cada usuario
             for usuario in lista_usuarios:
                 usuario_inscripciones = [
                     {'titulo': inscripcion['curso_titulo'], 'fecha_inscripcion': inscripcion['fecha_inscripcion']}
@@ -820,15 +843,17 @@ def admin_view():
                 usuario['inscripciones'] = usuario_inscripciones
 
     except Exception as e:
-        flash('Ocurrió un error al obtener los datos: {}'.format(e), 'error')
+        flash(f'Ocurrió un error al obtener los datos: {e}', 'error')
         traceback.print_exc()
 
     finally:
-        if conn.is_connected():
+        if cursor:
             cursor.close()
+        if conn:
             conn.close()
 
-    return render_template('admin.html', cursos=cursos, usuarios=lista_usuarios, total_pages=total_pages, current_page=page, search_query=search_query)
+    return render_template('admin.html', cursos=cursos, usuarios=lista_usuarios,
+                           total_pages=total_pages, current_page=page, search_query=search_query)
 
 @app.route("/users/add", methods=['GET', 'POST'])
 def add_user():
@@ -836,7 +861,7 @@ def add_user():
         return redirect(url_for('login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
     
     try:
         # Obtener lista de cursos para mostrar en el formulario
@@ -888,7 +913,7 @@ def add_user():
 @app.route('/users/delete/<int:id>', methods=['POST'])
 def delete_user(id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
 
     try:
         cursor.execute("DELETE FROM usuarios WHERE id = %s", (id,))
@@ -907,7 +932,7 @@ def delete_user(id):
 @app.route("/student/<int:user_id>")
 def student(user_id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
     
     try:
         cursor.execute("SELECT * FROM usuarios WHERE id = %s", (user_id,))
@@ -947,7 +972,7 @@ def student(user_id):
 @app.route('/users/edit/<int:id>', methods=['GET', 'POST'])
 def edit_user(id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
 
     if request.method == 'POST':
         nombre = request.form['nombre']
@@ -1000,7 +1025,7 @@ def edit_user(id):
 
     # Obtener la lista de todos los cursos para mostrar en el formulario
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
     cursor.execute("SELECT id, titulo FROM cursos")
     lista_cursos = cursor.fetchall()
     cursor.close()
